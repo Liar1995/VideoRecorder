@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--进度按钮-->
+    <declare-styleable name="ZoomProgressButton">
+        <attr name="radius" format="dimension"/>
+        <attr name="stripeWidth" format="dimension"/><!--进度条宽度-->
+        <attr name="progressColor" format="color"/><!--进度颜色-->
+        <attr name="centerColor" format="color"/><!--中心颜色-->
+        <!--按钮背景颜色-->
+        <attr name="backgroundColor" format="color"/>
+    </declare-styleable>
+</resources>

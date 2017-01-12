@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/camera_preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="#000000">
+
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/button_ChangeCamera"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="15dp"
+        android:src="@mipmap/camera_switch" />
+
+    <ImageView
+        android:id="@+id/buttonFlash"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="50dp"
+        android:layout_marginTop="15dp"
+        android:src="@mipmap/opendeng"
+        android:visibility="gone" />
+
+    <RelativeLayout
+        android:id="@+id/re_video_record_panel"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_alignParentBottom="true"
+        android:background="#00ffffff"
+        android:visibility="visible">
+
+        <com.cocomeng.videorecorder.ZoomProgressButton
+            android:id="@+id/button_capture"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_centerInParent="true"
+            app:backgroundColor="@color/white"
+            app:centerColor="@color/red"
+            app:progressColor="@color/blue"
+            app:stripeWidth="3dp" />
+
+        <ImageView
+            android:id="@+id/img_back"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="53dp"
+            android:src="@mipmap/nav_down_nor" />
+
+        <TextView
+            android:id="@+id/txt_touch_shoot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="按下拍摄"
+            android:textColor="#ffffff" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/re_video_control_panel"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_alignParentBottom="true"
+        android:background="#00ffffff"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/img_repleal"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_centerInParent="true"
+            android:src="@mipmap/repeal" />
+
+        <ImageView
+            android:id="@+id/img_selected"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_centerInParent="true"
+            android:src="@mipmap/select" />
+
+    </RelativeLayout>
+
+</RelativeLayout>
