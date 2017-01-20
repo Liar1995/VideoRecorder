@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">GeneqiaoVideoRecorder</string>
+    <string name="fail_when_camera_try_autofocus">对焦失败:%1$s</string>
+    <string name="dont_have_camera_error">对不起,没有发现摄像头,请检查</string>
+    <string name="only_have_one_camera">对不起,您只有一个摄像头,无法切换</string>
+    <string name="camera_init_fail">摄像头初始化失败</string>
+    <string name="dont_have_front_camera">当前设备没有前置摄像头</string>
+    <string name="changing_flashLight_mode">切换闪光灯模式失败</string>
+</resources>

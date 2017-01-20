@@ -1,10 +1,9 @@
-package com.cocomeng.videorecorder;
+package com.cocomeng.geneqiaovideorecorder;
 
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -34,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.view.View.VISIBLE;
-import static com.cocomeng.videorecorder.R.id.button_ChangeCamera;
 
 /**
  * Created by Sunmeng Data:2016年12月31日
@@ -74,7 +72,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_camera);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        button_changeCamera = (ImageView) findViewById(button_ChangeCamera);
+        button_changeCamera = (ImageView) findViewById(R.id.button_ChangeCamera);
         buttonFlash = (ImageView) findViewById(R.id.buttonFlash);
         img_repleal = (ImageView) findViewById(R.id.img_repleal);
         img_selected = (ImageView) findViewById(R.id.img_selected);
@@ -86,7 +84,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         button_changeCamera.setVisibility(VISIBLE);
         initialize();
         initFocusView();
+        txt_touch_shoot.post(delayPrepareCamera);
     }
+
+    private Runnable delayPrepareCamera=new Runnable() {
+        @Override
+        public void run() {
+            prepareCamera();
+        }
+    };
 
     private void initFocusView() {
         // 添加对焦动画视图
@@ -157,13 +163,34 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         return cameraId;
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        preparCamera();
+    //点击对焦
+    public void initialize() {
+        mPreview = new CameraPreview(CameraActivity.this, mCamera);
+        camera_preview.addView(mPreview);
+        mZoomProgressBtn = (ZoomProgressButton) findViewById(R.id.button_capture);
+        mZoomProgressBtn.setOnTouchListener(mOnVideoControllerTouchListener);
+        button_changeCamera.setOnClickListener(switchCameraListener);
+        buttonFlash.setOnClickListener(flashListener);
+        img_back.setOnClickListener(this);
+        img_repleal.setOnClickListener(this);
+        img_selected.setOnClickListener(this);
+        camera_preview.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    try {
+                        focusOnTouch(event);
+                    } catch (Exception e) {
+                        Log.i(TAG, getString(R.string.fail_when_camera_try_autofocus, e.toString()));
+                    }
+                }
+                return true;
+            }
+        });
+        mZoomProgressBtn.setProgressListener(this);
     }
 
-    public void preparCamera() {
+    public void prepareCamera() {
         if (!hasCamera(getApplicationContext())) {
             //这台设备没有发现摄像头
             Toast.makeText(getApplicationContext(), R.string.dont_have_camera_error, Toast.LENGTH_SHORT).show();
@@ -174,7 +201,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         if (mCamera == null) {
             releaseCamera();
             final boolean frontal = cameraFront;
-
             int cameraId = findFrontFacingCamera();
             if (cameraId < 0) {
                 //前置摄像头不存在
@@ -204,59 +230,17 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    //点击对焦
-    public void initialize() {
-        mPreview = new CameraPreview(CameraActivity.this, mCamera);
-        camera_preview.addView(mPreview);
-        mZoomProgressBtn = (ZoomProgressButton) findViewById(R.id.button_capture);
-        mZoomProgressBtn.setOnTouchListener(mOnVideoControllerTouchListener);
-        button_changeCamera.setOnClickListener(switchCameraListener);
-        buttonFlash.setOnClickListener(flashListener);
-        img_back.setOnClickListener(this);
-        img_repleal.setOnClickListener(this);
-        img_selected.setOnClickListener(this);
-        camera_preview.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    try {
-                        focusOnTouch(event);
-                    } catch (Exception e) {
-                        Log.i(TAG, getString(R.string.fail_when_camera_try_autofocus, e.toString()));
-                    }
-                }
-                return true;
-            }
-        });
-        mZoomProgressBtn.setProgressListener(this);
-    }
-
     //reload成像质量
     private void reloadQualities(int idCamera) {
-        SharedPreferences prefs = getSharedPreferences("RECORDING", Context.MODE_PRIVATE);
-        quality = prefs.getInt("QUALITY", CamcorderProfile.QUALITY_480P);
-        changeVideoQuality(quality);
-        final ArrayList<String> list = new ArrayList<>();
-        int maxQualitySupported = CamcorderProfile.QUALITY_480P;
         if (CamcorderProfile.hasProfile(idCamera, CamcorderProfile.QUALITY_480P)) {
-            list.add("480p");
-            maxQualitySupported = CamcorderProfile.QUALITY_480P;
+            quality = CamcorderProfile.QUALITY_480P;
         }
         if (CamcorderProfile.hasProfile(idCamera, CamcorderProfile.QUALITY_720P)) {
-            list.add("720p");
-            maxQualitySupported = CamcorderProfile.QUALITY_720P;
+            quality = CamcorderProfile.QUALITY_720P;
         }
-        if (CamcorderProfile.hasProfile(idCamera, CamcorderProfile.QUALITY_1080P)) {
-            list.add("1080p");
-            maxQualitySupported = CamcorderProfile.QUALITY_1080P;
-        }
-        if (CamcorderProfile.hasProfile(idCamera, CamcorderProfile.QUALITY_2160P)) {
-            list.add("2160p");
-            maxQualitySupported = CamcorderProfile.QUALITY_2160P;
-        }
-        if (!CamcorderProfile.hasProfile(idCamera, quality)) {
-            quality = maxQualitySupported;
-        }
+//        if (CamcorderProfile.hasProfile(idCamera, CamcorderProfile.QUALITY_1080P)) {
+//            quality = CamcorderProfile.QUALITY_1080P;
+//        }
     }
 
     //闪光灯
@@ -396,6 +380,14 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private boolean videoTimeTooShort = false;//视频时长太短
+
+    private Runnable delayTouch = new Runnable() {
+        @Override
+        public void run() {
+            mZoomProgressBtn.setOnTouchListener(mOnVideoControllerTouchListener);
+        }
+    };
+
     private View.OnTouchListener mOnVideoControllerTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -405,15 +397,16 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     break;
                 case MotionEvent.ACTION_UP:
                     if (mZoomProgressBtn.videoTime < 1) {
-                        Toast.makeText(CameraActivity.this, "拍摄时间太短", Toast.LENGTH_LONG).show();
                         videoTimeTooShort = true;
                         ObjectAnimator.ofFloat(txt_touch_shoot, "alpha", 0F, 1F).setDuration(100).start();
-                        releaseCamera();//释放摄像头
-                        releaseMediaRecorder();//释放MediaRecorder对象
-                        preparCamera();//重新初始化摄像头
+                        Toast.makeText(CameraActivity.this, "拍摄时间太短", Toast.LENGTH_LONG).show();
+                        prepareCamera();//重新初始化摄像头
+                        mZoomProgressBtn.setOnTouchListener(null);//因为MediaRecorder的创建和释放会有卡顿，在这里做延迟touch操作，体验好一点
+                        mZoomProgressBtn.postDelayed(delayTouch, 2000);
                     } else {
                         videoTimeTooShort = false;
                     }
+                    mZoomProgressBtn.onDestroy();
                     mZoomProgressBtn.narrowBtn();
                     break;
             }
@@ -421,11 +414,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
     };
 
-    private void changeRequestedOrientation(int orientation) {
-        setRequestedOrientation(orientation);
-    }
-
     private void releaseMediaRecorder() {
+        Log.i("Sunmeng", "releaseMediaRecorder :" + mediaRecorder + "    mCamera : " + mCamera);
         if (mediaRecorder != null) {
             mediaRecorder.reset();
             mediaRecorder.release();
@@ -435,32 +425,32 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    private boolean prepareMediaRecorder() {
-        mediaRecorder = new MediaRecorder();
-        mCamera.unlock();
-        mediaRecorder.setCamera(mCamera);
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            if (cameraFront) {
-                mediaRecorder.setOrientationHint(270);
-            } else {
-                mediaRecorder.setOrientationHint(90);
-            }
-        }
+    private void changeRequestedOrientation(int orientation) {
+        setRequestedOrientation(orientation);
+    }
 
-        mediaRecorder.setProfile(CamcorderProfile.get(quality));
-        File file = new File("/mnt/sdcard/videokit");
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-        url_file = "/mnt/sdcard/videokit/in.mp4";
-        File file1 = new File(url_file);
-        if (file1.exists()) {
-            file1.delete();
-        }
-        mediaRecorder.setOutputFile(url_file);
+    private boolean prepareMediaRecorder() {
         try {
+            mediaRecorder = new MediaRecorder();
+            mCamera.unlock();
+            mediaRecorder.setCamera(mCamera);
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+            mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                if (cameraFront) {
+                    mediaRecorder.setOrientationHint(270);
+                } else {
+                    mediaRecorder.setOrientationHint(90);
+                }
+            }
+            mediaRecorder.setProfile(CamcorderProfile.get(quality));
+            url_file = "/mnt/sdcard/videokit/in.mp4";
+//            url_file = getExternalFilesDir(Environment.DIRECTORY_MOVIES) + File.separator + "in.mp4";
+            File file1 = new File(url_file);
+            if (file1.exists()) {
+                file1.delete();
+            }
+            mediaRecorder.setOutputFile(url_file);
             mediaRecorder.prepare();
         } catch (IllegalStateException e) {
             e.printStackTrace();
@@ -480,16 +470,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             mCamera = null;
         }
     }
-
-    //修改录像质量
-    private void changeVideoQuality(int quality) {
-        SharedPreferences prefs = getSharedPreferences("RECORDING", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt("QUALITY", quality);
-        editor.apply();
-        this.quality = quality;
-    }
-
 
     //闪光灯
     public void setFlashMode(String mode) {
@@ -519,10 +499,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             mediaRecorder.stop();
             releaseMediaRecorder();
             recording = false;
-            File mp4 = new File(url_file);
-            if (mp4.exists() && mp4.isFile()) {
-                mp4.delete();
-            }
         }
         releaseCamera();
         releaseMediaRecorder();
@@ -547,7 +523,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             mFocusAnimationView.clearAnimation();
             int left = (int) (event.getX() - mFocusAnimationView.getWidth() / 2f);
             int top = (int) (event.getY() - mFocusAnimationView.getHeight() / 2f);
-            Log.i("Sunmeng", "left : " + left + " top : " + top);
             ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mFocusAnimationView.getLayoutParams();
             params.setMargins(left, top, 0, 0);
             mFocusAnimationView.setLayoutParams(params);
@@ -589,17 +564,14 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.img_back:
-                releaseVideoRecorder();
-                break;
-            case R.id.img_repleal:
-                preparCamera();
-                switchControlView(true);
-                break;
-            case R.id.img_selected:
-                Toast.makeText(this, "发送", Toast.LENGTH_LONG).show();
-                break;
+        int i = view.getId();
+        if (i == R.id.img_back) {
+            releaseVideoRecorder();
+        } else if (i == R.id.img_repleal) {
+            prepareCamera();
+            switchControlView(true);
+        } else if (i == R.id.img_selected) {
+            Toast.makeText(this, "发送", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -607,7 +579,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      * 按下拍摄文字描述隐藏
      */
     private void onTxtDisappear() {
-        ObjectAnimator.ofFloat(txt_touch_shoot, "alpha", 1F, 0F).setDuration(300).start();
+        ObjectAnimator.ofFloat(txt_touch_shoot, "alpha", 1F, 0F).setDuration(100).start();
     }
 
     @Override
@@ -617,6 +589,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void progressEnd() {
+        Log.i("Sunmeng", "progressEnd-videoTimeTooShort：" + videoTimeTooShort);
         if (!videoTimeTooShort) {
             stopRecord();
             //录制时长等于最大时长，强制停止
@@ -635,9 +608,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onnEndNarrowBtn() {
         //按钮缩放动画结束，显示操作栏
+//        Log.i("Sunmeng", "onnEndNarrowBtn.videoTimeTooShort:" + videoTimeTooShort);
+        releaseMediaRecorder();//释放MediaRecorder对象
         if (!videoTimeTooShort)
             switchControlView(false);
     }
-
 }
 

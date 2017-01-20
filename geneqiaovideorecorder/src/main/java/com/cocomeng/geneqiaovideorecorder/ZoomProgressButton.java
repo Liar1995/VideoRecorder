@@ -1,4 +1,4 @@
-package com.cocomeng.videorecorder;
+package com.cocomeng.geneqiaovideorecorder;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
@@ -154,7 +155,6 @@ public class ZoomProgressButton extends View {
                 new Thread(mCountdownVideo).start();
             }
         });
-
         valueAnimator.setDuration(mMaxMillSecond);
         valueAnimator.setInterpolator(new LinearInterpolator());
         valueAnimator.start();
@@ -273,6 +273,11 @@ public class ZoomProgressButton extends View {
         void onnEndNarrowBtn();
     }
 
+    public void onDestroy() {
+        recording = false;
+        videoTime=-1;
+    }
+
     public int videoTime = -1;//视频时长
     private boolean recording = false;
     private Runnable mCountdownVideo = new Runnable() {
@@ -280,6 +285,7 @@ public class ZoomProgressButton extends View {
         public void run() {
             try {
                 while (recording) {
+                    Log.i("Sunmeng", "Runnable:" + videoTime);
                     videoTime += 1;
                     Thread.sleep(1000);
                     if (!recording) break;//防止在线程休眠时recording改变

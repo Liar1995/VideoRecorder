@@ -1,4 +1,4 @@
-package com.cocomeng.videorecorder;
+package com.cocomeng.geneqiaovideorecorder;
 
 import android.content.Context;
 import android.util.TypedValue;

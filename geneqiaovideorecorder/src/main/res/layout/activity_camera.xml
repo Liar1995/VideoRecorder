@@ -43,7 +43,7 @@
         android:background="#00ffffff"
         android:visibility="visible">
 
-        <com.cocomeng.videorecorder.ZoomProgressButton
+        <com.cocomeng.geneqiaovideorecorder.ZoomProgressButton
             android:id="@+id/button_capture"
             android:layout_width="70dp"
             android:layout_height="70dp"

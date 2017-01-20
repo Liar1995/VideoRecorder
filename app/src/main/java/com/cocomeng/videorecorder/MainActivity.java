@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.cocomeng.geneqiaovideorecorder.CameraActivity;
+
 /**
  * Created by Sunmeng Data:2016年12月30日
  * E-Mail:Sunmeng1995@outlook.com
