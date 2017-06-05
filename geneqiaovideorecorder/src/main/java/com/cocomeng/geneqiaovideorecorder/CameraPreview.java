@@ -75,9 +75,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         setCamera(camera);
         try {
             mCamera.setPreviewDisplay(mHolder);
-
             optimizeCameraDimens(mCamera);
-
+            mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                @Override
+                public void onAutoFocus(boolean success, Camera camera) {
+                    mCamera.cancelAutoFocus();
+                }
+            });
             mCamera.startPreview();
         } catch (Exception e) {
             Log.d(VIEW_LOG_TAG, "Error starting camera preview: " + e.getMessage());
